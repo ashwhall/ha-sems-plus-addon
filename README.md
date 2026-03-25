@@ -1,8 +1,9 @@
 # SEMS+ Scraper — Home Assistant Add-on
 
-A Home Assistant add-on that scrapes the [GoodWe SEMS+](https://semsplus.goodwe.com) solar portal using a headless Chromium browser and exposes the data via a local HTTP API.
+> **Disclaimer:**
+> This project was generated entirely by AI (GitHub Copilot/Claude). I (Ash) cannot take any accountability for the code, its correctness, or any issues that may arise with SEMS+, GoodWe, or related services. Use at your own risk.
 
-> **Note:** This add-on was written by [Claude Opus](https://www.anthropic.com/claude) in agent mode within VS Code (GitHub Copilot).
+A Home Assistant add-on that scrapes the [GoodWe SEMS+](https://semsplus.goodwe.com) solar portal using a headless Chromium browser and exposes the data via a local HTTP API.
 
 ---
 
