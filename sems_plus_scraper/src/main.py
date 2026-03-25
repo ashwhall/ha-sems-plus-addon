@@ -101,16 +101,18 @@ app = FastAPI(
 )
 
 
+
 @app.get("/v1/metrics", response_model=PlantMetrics)
 async def get_metrics():
-    """Return the latest scraped plant metrics, ensuring no string 'None' values."""
+    """Return the latest scraped plant metrics, ensuring no string 'None' values. Logs extra info if metrics are missing or stale."""
     if _latest_metrics is None:
+        logger.warning("/v1/metrics requested but no metrics are cached yet (first scrape may still be running)")
         return JSONResponse(
             status_code=503,
             content={
                 "detail": "No metrics available yet — first scrape may still be running."},
         )
-    # Convert any string 'None' or None numeric fields to 0
+    # Defensive: Only return last good metrics, never zeros unless missing in last scrape
     metrics_dict = _latest_metrics.model_dump()
     numeric_fields = [
         'current_power_w', 'grid_import_w', 'grid_export_w',
@@ -118,10 +120,19 @@ async def get_metrics():
         'generation_revenue', 'export_revenue', 'total_energy_kwh',
         'battery_soc_pct', 'battery_power_w', 'consumption_w'
     ]
+    missing = []
     for k in numeric_fields:
         v = metrics_dict.get(k, None)
         if v is None or v == "None":
             metrics_dict[k] = 0
+            missing.append(k)
+    if missing:
+        logger.warning("/v1/metrics: Returning cached metrics, but the following fields are missing or None: %s", ', '.join(missing))
+    # Optionally, warn if data is stale (older than 2x poll interval)
+    if _last_scrape and _config:
+        age = (datetime.now(timezone.utc) - _last_scrape).total_seconds()
+        if age > 2 * _config.poll_interval_seconds:
+            logger.warning("/v1/metrics: Returning stale metrics (last scrape was %.0f seconds ago)", age)
     return PlantMetrics(**metrics_dict)
 
 
