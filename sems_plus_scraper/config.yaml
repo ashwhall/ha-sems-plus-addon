@@ -4,6 +4,7 @@ slug: sems_plus_scraper
 description: >-
   Scrapes the GoodWe SEMS+ portal (semsplus.goodwe.com) for solar inverter
   metrics and exposes them via a local HTTP API for Home Assistant consumption.
+image: ghcr.io/ashwhall/sems-plus-scraper-{arch}
 url: https://github.com/ashwhall/ha-sems-plus-addon
 arch:
   - amd64
