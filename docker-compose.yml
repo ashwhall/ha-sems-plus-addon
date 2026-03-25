@@ -1,0 +1,19 @@
+# Local development — not used in HA add-on builds
+# Usage:
+#   docker compose up --build
+#
+# Then:
+#   curl http://localhost:8099/v1/health
+#   curl http://localhost:8099/v1/metrics
+
+services:
+  scraper:
+    build:
+      context: ./sems_plus_scraper
+      args:
+        BUILD_FROM: python:3.12-slim
+    ports:
+      - "8099:8099"
+    volumes:
+      - ./sems_plus_scraper/dev_options.json:/data/options.json:ro
+    shm_size: "512mb"   # Chromium needs shared memory

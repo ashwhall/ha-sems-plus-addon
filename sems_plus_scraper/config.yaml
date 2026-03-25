@@ -1,0 +1,30 @@
+name: SEMS+ Scraper
+version: 0.1.0
+slug: sems_plus_scraper
+description: >-
+  Scrapes the GoodWe SEMS+ portal (semsplus.goodwe.com) for solar inverter
+  metrics and exposes them via a local HTTP API for Home Assistant consumption.
+url: https://github.com/ashwhall/ha-sems-plus-addon
+arch:
+  - amd64
+  - aarch64
+startup: application
+boot: auto
+init: false
+ports:
+  8099/tcp: 8099
+ports_description:
+  8099/tcp: HTTP API
+ingress: false
+map:
+  - config:rw
+options:
+  sems_username: ""
+  sems_password: ""
+  poll_interval_seconds: 300
+  plant_id: ""
+schema:
+  sems_username: str
+  sems_password: password
+  poll_interval_seconds: "int(60,3600)"
+  plant_id: str?

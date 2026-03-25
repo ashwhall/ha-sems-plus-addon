@@ -1,0 +1,133 @@
+"""FastAPI application — HTTP API + background scrape scheduler."""
+
+from __future__ import annotations
+
+import asyncio
+import logging
+from contextlib import asynccontextmanager
+from datetime import datetime, timedelta, timezone
+from typing import Optional
+
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+
+from .config import AddonConfig, load_config
+from .models import HealthResponse, PlantMetrics
+from .scraper import SEMSScraper
+
+logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Application state (module-level singletons, set during lifespan)
+# ---------------------------------------------------------------------------
+_config: Optional[AddonConfig] = None
+_scraper: Optional[SEMSScraper] = None
+_latest_metrics: Optional[PlantMetrics] = None
+_last_error: Optional[str] = None
+_last_scrape: Optional[datetime] = None
+_next_scrape: Optional[datetime] = None
+_scrape_count: int = 0
+_scrape_task: Optional[asyncio.Task] = None
+
+
+# ---------------------------------------------------------------------------
+# Background scheduler
+# ---------------------------------------------------------------------------
+
+async def _scrape_loop() -> None:
+    """Periodically scrape SEMS+ and store the latest metrics."""
+    global _latest_metrics, _last_error, _last_scrape, _next_scrape, _scrape_count
+
+    if not _config or not _scraper:
+        return
+
+    while True:
+        _next_scrape = datetime.now(timezone.utc) + timedelta(seconds=_config.poll_interval_seconds)
+        try:
+            logger.info("Starting scrape...")
+            _latest_metrics = await _scraper.scrape_metrics()
+            _last_scrape = datetime.now(timezone.utc)
+            _last_error = None
+            _scrape_count += 1
+            logger.info("Scrape #%d succeeded", _scrape_count)
+        except Exception as exc:
+            _last_error = str(exc)
+            logger.exception("Scrape failed: %s", exc)
+
+        await asyncio.sleep(_config.poll_interval_seconds)
+
+
+# ---------------------------------------------------------------------------
+# Lifespan (startup / shutdown)
+# ---------------------------------------------------------------------------
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Start browser + scheduler on startup, clean up on shutdown."""
+    global _config, _scraper, _scrape_task
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    )
+    logger.info("SEMS+ Scraper starting up...")
+
+    _config = load_config()
+    _scraper = SEMSScraper(_config)
+    await _scraper.start()
+    _scrape_task = asyncio.create_task(_scrape_loop())
+
+    yield  # app is running
+
+    logger.info("Shutting down...")
+    if _scrape_task:
+        _scrape_task.cancel()
+        try:
+            await _scrape_task
+        except asyncio.CancelledError:
+            pass
+    if _scraper:
+        await _scraper.close()
+
+
+# ---------------------------------------------------------------------------
+# FastAPI app
+# ---------------------------------------------------------------------------
+
+app = FastAPI(
+    title="SEMS+ Scraper",
+    version="0.1.0",
+    docs_url="/docs",
+    lifespan=lifespan,
+)
+
+
+@app.get("/v1/metrics", response_model=PlantMetrics)
+async def get_metrics():
+    """Return the latest scraped plant metrics."""
+    if _latest_metrics is None:
+        return JSONResponse(
+            status_code=503,
+            content={"detail": "No metrics available yet — first scrape may still be running."},
+        )
+    return _latest_metrics
+
+
+@app.get("/v1/health", response_model=HealthResponse)
+async def get_health():
+    """Return add-on health and status."""
+    if _last_scrape is None and _last_error is None:
+        status = "starting"
+    elif _last_error:
+        status = "error"
+    else:
+        status = "ok"
+
+    return HealthResponse(
+        status=status,
+        version="0.1.0",
+        last_scrape=_last_scrape,
+        next_scrape=_next_scrape,
+        error=_last_error,
+        scrape_count=_scrape_count,
+    )
