@@ -29,10 +29,11 @@ RUN chmod +x /app/run.sh
 
 # S6-overlay service (used by HA base images)
 RUN mkdir -p /etc/services.d/sems-plus
-COPY run.sh /etc/services.d/sems-plus/run
-RUN chmod +x /etc/services.d/sems-plus/run
+RUN ln -s /app/run.sh /etc/services.d/sems-plus/run
 
 WORKDIR /app
 
-# Fallback for non-S6 bases (local development)
-CMD ["/app/run.sh"]
+# Entrypoint for non-S6 bases (local development with docker-compose).
+# On HA base images, S6 is PID 1 and starts /etc/services.d/sems-plus/run;
+# S6 overrides ENTRYPOINT so this is only used outside HA.
+ENTRYPOINT ["/app/run.sh"]

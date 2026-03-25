@@ -1,5 +1,5 @@
 name: SEMS+ Scraper
-version: 0.1.1
+version: 0.1.2
 slug: sems_plus_scraper
 description: >-
   Scrapes the GoodWe SEMS+ portal (semsplus.goodwe.com) for solar inverter
