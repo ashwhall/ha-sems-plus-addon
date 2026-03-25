@@ -183,8 +183,8 @@ class SEMSScraper:
 
         await self._page.goto(dashboard_url, wait_until="networkidle", timeout=60_000)
 
-        # Allow dynamic content to render
-        await self._page.wait_for_timeout(3000)
+        # Allow dynamic content to render (increase to 8 seconds)
+        await self._page.wait_for_timeout(8000)
 
         # Selectors: each metric block is a .index-module_textRich_503fd container
         # with a label in .index-module_textLabelName_23179[title="<Label>"].
@@ -210,6 +210,12 @@ class SEMSScraper:
         battery_soc = await self._read_metric(
             f"{_block}:has({_label}[title='Battery']) {_soc}"
         )
+
+        # If any main metric is missing, log the dashboard HTML for debugging
+        if any(x is None for x in [solar_power, grid_power, load_power]):
+            html = await self._page.content()
+            logger.warning(
+                "One or more main metrics missing. Dashboard HTML follows.\n%s", html)
 
         # Daily metrics: each block is a div.index-module_inComeLeft_41e28
         # containing a div.index-module_title_6dff4 with the label text,

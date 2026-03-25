@@ -146,7 +146,7 @@ Interactive API documentation is available at `http://<addon>:8099/docs`.
 
 ## Example: Home Assistant REST Sensors
 
-Add this to your `configuration.yaml` to consume the API without the optional HACS integration:
+Add this to your `configuration.yaml` to consume the API without the optional HACS integration. This example includes all available sensors as of the latest release:
 
 ```yaml
 rest:
@@ -160,7 +160,7 @@ rest:
         state_class: measurement
 
       - name: 'Solar Daily Energy'
-        value_template: '{{ value_json.daily_energy_kwh }}'
+        value_template: '{{ value_json.daily_generation_kwh }}'
         unit_of_measurement: 'kWh'
         device_class: energy
         state_class: total_increasing
@@ -177,6 +177,12 @@ rest:
         device_class: battery
         state_class: measurement
 
+      - name: 'Battery Power'
+        value_template: '{{ value_json.battery_power_w }}'
+        unit_of_measurement: 'W'
+        device_class: power
+        state_class: measurement
+
       - name: 'Grid Export'
         value_template: '{{ value_json.grid_export_w }}'
         unit_of_measurement: 'W'
@@ -189,12 +195,45 @@ rest:
         device_class: power
         state_class: measurement
 
+      - name: 'Grid Daily Import'
+        value_template: '{{ value_json.daily_import_kwh }}'
+        unit_of_measurement: 'kWh'
+        device_class: energy
+        state_class: total_increasing
+
+      - name: 'Grid Daily Export'
+        value_template: '{{ value_json.daily_export_kwh }}'
+        unit_of_measurement: 'kWh'
+        device_class: energy
+        state_class: total_increasing
+
       - name: 'House Consumption'
         value_template: '{{ value_json.consumption_w }}'
         unit_of_measurement: 'W'
         device_class: power
         state_class: measurement
+
+      - name: 'House Daily Consumption'
+        value_template: '{{ value_json.daily_consumption_kwh }}'
+        unit_of_measurement: 'kWh'
+        device_class: energy
+        state_class: total_increasing
+
+      # Uncomment if you want revenue sensors
+      # - name: 'Generation Revenue'
+      #   value_template: '{{ value_json.generation_revenue }}'
+      #   unit_of_measurement: '{{ value_json.revenue_currency }}'
+      #   device_class: monetary
+      #   state_class: measurement
+
+      # - name: 'Export Revenue'
+      #   value_template: '{{ value_json.export_revenue }}'
+      #   unit_of_measurement: '{{ value_json.revenue_currency }}'
+      #   device_class: monetary
+      #   state_class: measurement
 ```
+
+**Note:** The available fields in the API may change as the SEMS+ dashboard evolves. If you add new sensors, check the `/v1/metrics` endpoint or the OpenAPI docs at `/docs` for the latest field names.
 
 ---
 

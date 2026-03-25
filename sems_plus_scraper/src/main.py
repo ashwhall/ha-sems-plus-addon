@@ -103,7 +103,6 @@ app = FastAPI(
 )
 
 
-
 @app.get("/v1/metrics", response_model=PlantMetrics)
 async def get_metrics():
     """Return the latest scraped plant metrics, ensuring no string 'None' values."""
@@ -113,11 +112,18 @@ async def get_metrics():
             content={
                 "detail": "No metrics available yet — first scrape may still be running."},
         )
-    # Convert any string 'None' to None (null in JSON)
+    # Convert any string 'None' or None numeric fields to 0
     metrics_dict = _latest_metrics.model_dump()
-    for k, v in metrics_dict.items():
-        if v == "None":
-            metrics_dict[k] = None
+    numeric_fields = [
+        'current_power_w', 'grid_import_w', 'grid_export_w',
+        'daily_generation_kwh', 'daily_export_kwh', 'daily_import_kwh', 'daily_consumption_kwh',
+        'generation_revenue', 'export_revenue', 'total_energy_kwh',
+        'battery_soc_pct', 'battery_power_w', 'consumption_w'
+    ]
+    for k in numeric_fields:
+        v = metrics_dict.get(k, None)
+        if v is None or v == "None":
+            metrics_dict[k] = 0
     return PlantMetrics(**metrics_dict)
 
 

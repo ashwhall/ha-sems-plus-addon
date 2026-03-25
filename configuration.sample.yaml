@@ -1,0 +1,82 @@
+rest:
+  - resource: http://localhost:8099/v1/metrics
+    scan_interval: 300
+    sensor:
+      - name: 'Solar Power'
+        value_template: '{{ value_json.current_power_w }}'
+        unit_of_measurement: 'W'
+        device_class: power
+        state_class: measurement
+
+      - name: 'Solar Daily Energy'
+        value_template: '{{ value_json.daily_generation_kwh }}'
+        unit_of_measurement: 'kWh'
+        device_class: energy
+        state_class: total_increasing
+
+      - name: 'Solar Total Energy'
+        value_template: '{{ value_json.total_energy_kwh }}'
+        unit_of_measurement: 'kWh'
+        device_class: energy
+        state_class: total_increasing
+
+      - name: 'Battery SOC'
+        value_template: '{{ value_json.battery_soc_pct }}'
+        unit_of_measurement: '%'
+        device_class: battery
+        state_class: measurement
+
+      - name: 'Battery Power'
+        value_template: '{{ value_json.battery_power_w }}'
+        unit_of_measurement: 'W'
+        device_class: power
+        state_class: measurement
+
+      - name: 'Grid Export'
+        value_template: '{{ value_json.grid_export_w }}'
+        unit_of_measurement: 'W'
+        device_class: power
+        state_class: measurement
+
+      - name: 'Grid Import'
+        value_template: '{{ value_json.grid_import_w }}'
+        unit_of_measurement: 'W'
+        device_class: power
+        state_class: measurement
+
+      - name: 'Grid Daily Import'
+        value_template: '{{ value_json.daily_import_kwh }}'
+        unit_of_measurement: 'kWh'
+        device_class: energy
+        state_class: total_increasing
+
+      - name: 'Grid Daily Export'
+        value_template: '{{ value_json.daily_export_kwh }}'
+        unit_of_measurement: 'kWh'
+        device_class: energy
+        state_class: total_increasing
+
+      - name: 'House Consumption'
+        value_template: '{{ value_json.consumption_w }}'
+        unit_of_measurement: 'W'
+        device_class: power
+        state_class: measurement
+
+      - name: 'House Daily Consumption'
+        value_template: '{{ value_json.daily_consumption_kwh }}'
+        unit_of_measurement: 'kWh'
+        device_class: energy
+        state_class: total_increasing
+
+      # Uncomment if you want revenue sensors
+      # - name: 'Generation Revenue'
+      #   value_template: '{{ value_json.generation_revenue }}'
+      #   unit_of_measurement: '{{ value_json.revenue_currency }}'
+      #   device_class: monetary
+      #   state_class: measurement
+
+      # - name: 'Export Revenue'
+      #   value_template: '{{ value_json.export_revenue }}'
+      #   unit_of_measurement: '{{ value_json.revenue_currency }}'
+      #   device_class: monetary
+      #   state_class: measurement
