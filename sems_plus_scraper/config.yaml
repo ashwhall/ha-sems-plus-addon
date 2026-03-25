@@ -16,8 +16,6 @@ ports:
 ports_description:
   8099/tcp: HTTP API
 ingress: false
-map:
-  - config:rw
 options:
   sems_username: ""
   sems_password: ""
