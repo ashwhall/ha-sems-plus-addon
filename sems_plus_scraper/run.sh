@@ -3,12 +3,7 @@
 
 set -euo pipefail
 
-# Log using bashio if available (HA add-on), otherwise plain echo
-if command -v bashio &>/dev/null; then
-    bashio::log.info "Starting SEMS+ Scraper add-on..."
-else
-    echo "[INFO] Starting SEMS+ Scraper..."
-fi
+echo "[INFO] Starting SEMS+ Scraper add-on..."
 
 cd /app
 
