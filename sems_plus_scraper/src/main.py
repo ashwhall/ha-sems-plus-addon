@@ -75,7 +75,6 @@ async def lifespan(app: FastAPI):
 
     _config = load_config()
     _scraper = SEMSScraper(_config)
-    await _scraper.start()
     _scrape_task = asyncio.create_task(_scrape_loop())
 
     yield  # app is running
@@ -87,8 +86,7 @@ async def lifespan(app: FastAPI):
             await _scrape_task
         except asyncio.CancelledError:
             pass
-    if _scraper:
-        await _scraper.close()
+    # No browser to close; scraper is now stateless
 
 
 # ---------------------------------------------------------------------------
