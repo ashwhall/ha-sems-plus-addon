@@ -46,7 +46,8 @@ def load_config() -> AddonConfig:
         )
 
     raw = json.loads(path.read_text(encoding="utf-8"))
-    logger.info("Loaded add-on config: poll_interval=%ds", raw.get("poll_interval_seconds", 300))
+    logger.info("Loaded add-on config: poll_interval=%ds",
+                raw.get("poll_interval_seconds", 300))
     return AddonConfig(
         sems_username=raw["sems_username"],
         sems_password=raw["sems_password"],

@@ -16,4 +16,4 @@ services:
       - "8099:8099"
     volumes:
       - ./sems_plus_scraper/dev_options.json:/data/options.json:ro
-    shm_size: "512mb"   # Chromium needs shared memory
+    shm_size: "512mb" # Chromium needs shared memory

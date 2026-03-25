@@ -42,7 +42,8 @@ async def _scrape_loop() -> None:
         return
 
     while True:
-        _next_scrape = datetime.now(timezone.utc) + timedelta(seconds=_config.poll_interval_seconds)
+        _next_scrape = datetime.now(
+            timezone.utc) + timedelta(seconds=_config.poll_interval_seconds)
         try:
             logger.info("Starting scrape...")
             _latest_metrics = await _scraper.scrape_metrics()
@@ -102,15 +103,22 @@ app = FastAPI(
 )
 
 
+
 @app.get("/v1/metrics", response_model=PlantMetrics)
 async def get_metrics():
-    """Return the latest scraped plant metrics."""
+    """Return the latest scraped plant metrics, ensuring no string 'None' values."""
     if _latest_metrics is None:
         return JSONResponse(
             status_code=503,
-            content={"detail": "No metrics available yet — first scrape may still be running."},
+            content={
+                "detail": "No metrics available yet — first scrape may still be running."},
         )
-    return _latest_metrics
+    # Convert any string 'None' to None (null in JSON)
+    metrics_dict = _latest_metrics.model_dump()
+    for k, v in metrics_dict.items():
+        if v == "None":
+            metrics_dict[k] = None
+    return PlantMetrics(**metrics_dict)
 
 
 @app.get("/v1/health", response_model=HealthResponse)

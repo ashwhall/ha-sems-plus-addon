@@ -4,12 +4,12 @@ Scrapes the GoodWe SEMS+ solar portal and exposes metrics via a local HTTP API.
 
 ## Configuration
 
-| Option                   | Type     | Default | Description                                |
-|--------------------------|----------|---------|--------------------------------------------|
-| `sems_username`          | string   | —       | Your SEMS+ login email                     |
-| `sems_password`          | password | —       | Your SEMS+ login password                  |
-| `poll_interval_seconds`  | int      | `300`   | Scrape interval in seconds (60–3600)       |
-| `plant_id`               | string?  | `""`    | Optional — target a specific plant by ID   |
+| Option                  | Type     | Default | Description                              |
+| ----------------------- | -------- | ------- | ---------------------------------------- |
+| `sems_username`         | string   | —       | Your SEMS+ login email                   |
+| `sems_password`         | password | —       | Your SEMS+ login password                |
+| `poll_interval_seconds` | int      | `300`   | Scrape interval in seconds (60–3600)     |
+| `plant_id`              | string?  | `""`    | Optional — target a specific plant by ID |
 
 ## Usage
 
@@ -28,15 +28,15 @@ rest:
   - resource: http://localhost:8099/v1/metrics
     scan_interval: 300
     sensor:
-      - name: "Solar Power"
-        value_template: "{{ value_json.current_power_w }}"
-        unit_of_measurement: "W"
+      - name: 'Solar Power'
+        value_template: '{{ value_json.current_power_w }}'
+        unit_of_measurement: 'W'
         device_class: power
         state_class: measurement
 
-      - name: "Solar Daily Energy"
-        value_template: "{{ value_json.daily_energy_kwh }}"
-        unit_of_measurement: "kWh"
+      - name: 'Solar Daily Energy'
+        value_template: '{{ value_json.daily_energy_kwh }}'
+        unit_of_measurement: 'kWh'
         device_class: energy
         state_class: total_increasing
 ```

@@ -22,7 +22,8 @@ logger = logging.getLogger(__name__)
 SEMS_URL = "https://semsplus.goodwe.com"
 _DOCKER_COOKIE_PATH = Path("/data/cookies.json")
 _LOCAL_COOKIE_PATH = Path(__file__).parent.parent / "cookies.json"
-COOKIE_PATH = _DOCKER_COOKIE_PATH if _DOCKER_COOKIE_PATH.parent.exists() else _LOCAL_COOKIE_PATH
+COOKIE_PATH = _DOCKER_COOKIE_PATH if _DOCKER_COOKIE_PATH.parent.exists(
+) else _LOCAL_COOKIE_PATH
 
 
 class SEMSScraper:
@@ -44,7 +45,8 @@ class SEMSScraper:
         self._playwright = await async_playwright().start()
 
         # In Docker, use the system Chromium; locally, let Playwright find its own
-        chromium_path = os.environ.get("CHROMIUM_EXECUTABLE", "/usr/bin/chromium-browser")
+        chromium_path = os.environ.get(
+            "CHROMIUM_EXECUTABLE", "/usr/bin/chromium-browser")
         launch_kwargs: dict = {
             "headless": True,
             "args": [
@@ -124,7 +126,8 @@ class SEMSScraper:
 
         # Dismiss cookie consent banner if present
         try:
-            cookie_btn = self._page.locator("div.index-module_btns_815c4 button.ant-btn-primary")
+            cookie_btn = self._page.locator(
+                "div.index-module_btns_815c4 button.ant-btn-primary")
             if await cookie_btn.count() > 0:
                 await cookie_btn.click(timeout=5_000)
                 logger.info("Dismissed cookie consent banner")
@@ -139,7 +142,8 @@ class SEMSScraper:
         await self._page.fill("input#pwd", self._config.sems_password)
 
         # Accept login terms checkbox (click the wrapper label, not the hidden input)
-        checkbox_wrapper = self._page.locator("div.index-module_loginFooter_ebd64 .ant-checkbox-wrapper")
+        checkbox_wrapper = self._page.locator(
+            "div.index-module_loginFooter_ebd64 .ant-checkbox-wrapper")
         await checkbox_wrapper.click()
 
         # Click login button
@@ -170,7 +174,8 @@ class SEMSScraper:
         # The station detail URL uses a base64-encoded JSON hash fragment:
         # /#/station_monitor/station_detail?<base64({"stationId":"..."})>
         if self._config.plant_id:
-            payload = json.dumps({"stationId": self._config.plant_id}, separators=(",", ":"))
+            payload = json.dumps(
+                {"stationId": self._config.plant_id}, separators=(",", ":"))
             encoded = base64.b64encode(payload.encode()).decode()
             dashboard_url = f"{SEMS_URL}/#/station_monitor/station_detail?{encoded}"
         else:
@@ -282,7 +287,8 @@ class SEMSScraper:
                 cleaned = cleaned.lower().removesuffix(suffix).strip()
             return float(cleaned)
         except (ValueError, Exception) as exc:
-            logger.debug("Could not read direct text from '%s': %s", selector, exc)
+            logger.debug(
+                "Could not read direct text from '%s': %s", selector, exc)
             return None
 
     async def _read_metric(self, selector: str) -> Optional[float]:
@@ -297,7 +303,8 @@ class SEMSScraper:
         try:
             return float(cleaned)
         except ValueError:
-            logger.debug("Could not parse '%s' as float from selector '%s'", text, selector)
+            logger.debug(
+                "Could not parse '%s' as float from selector '%s'", text, selector)
             return None
 
     async def _read_revenue_currency(self, selector: str) -> Optional[str]:
