@@ -166,10 +166,20 @@ class SEMSScraper:
             battery_power = await self._read_metric_direct_text(page, f"{_block}:has({_label}[title='Battery']) {_value}")
             battery_soc = await self._read_metric(page, f"{_block}:has({_label}[title='Battery']) {_soc}")
 
-            if any(x is None for x in [solar_power, grid_power, load_power]):
+            missing_main = []
+            if solar_power is None:
+                logger.warning("Solar power (current_power_w) is missing (None) in scrape.")
+                missing_main.append("solar")
+            if grid_power is None:
+                logger.warning("Grid power (grid_import_w) is missing (None) in scrape.")
+                missing_main.append("grid")
+            if load_power is None:
+                logger.warning("Load/consumption (consumption_w) is missing (None) in scrape. This should never be None!")
+                missing_main.append("load")
+            # Only dump HTML if ALL main metrics are missing
+            if len(missing_main) == 3:
                 html = await page.content()
-                logger.warning(
-                    "One or more main metrics missing. Dashboard HTML follows.\n%s", html)
+                logger.warning("All main metrics missing. Dashboard HTML follows.\n%s", html)
 
             _daily_block = "div.index-module_inComeLeft_41e28"
             _daily_title = "div.index-module_title_6dff4"

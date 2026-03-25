@@ -93,20 +93,39 @@ async def lifespan(app: FastAPI):
 # FastAPI app
 # ---------------------------------------------------------------------------
 
+import yaml
+import os
+
+# Read version from config.yaml for consistency
+def _get_version():
+    config_path = os.path.join(os.path.dirname(__file__), "..", "sems_plus_scraper", "config.yaml")
+    try:
+        with open(config_path, "r") as f:
+            data = yaml.safe_load(f)
+            return str(data.get("version", "0.1.0"))
+    except Exception:
+        return "0.1.0"
+
 app = FastAPI(
     title="SEMS+ Scraper",
-    version="0.1.0",
+    version=_get_version(),
     docs_url="/docs",
     lifespan=lifespan,
 )
 
+# Quick win: Add a ping endpoint for instant health check (no DB, no scrape, just alive)
+@app.get("/v1/ping")
+async def ping():
+    """Simple liveness check for proxy/HA troubleshooting."""
+    return {"status": "ok"}
 
 
 @app.get("/v1/metrics", response_model=PlantMetrics)
 async def get_metrics():
     """Return the latest scraped plant metrics, ensuring no string 'None' values. Logs extra info if metrics are missing or stale."""
     if _latest_metrics is None:
-        logger.warning("/v1/metrics requested but no metrics are cached yet (first scrape may still be running)")
+        logger.warning(
+            "/v1/metrics requested but no metrics are cached yet (first scrape may still be running)")
         return JSONResponse(
             status_code=503,
             content={
@@ -127,12 +146,14 @@ async def get_metrics():
             metrics_dict[k] = 0
             missing.append(k)
     if missing:
-        logger.warning("/v1/metrics: Returning cached metrics, but the following fields are missing or None: %s", ', '.join(missing))
+        logger.warning(
+            "/v1/metrics: Returning cached metrics, but the following fields are missing or None: %s", ', '.join(missing))
     # Optionally, warn if data is stale (older than 2x poll interval)
     if _last_scrape and _config:
         age = (datetime.now(timezone.utc) - _last_scrape).total_seconds()
         if age > 2 * _config.poll_interval_seconds:
-            logger.warning("/v1/metrics: Returning stale metrics (last scrape was %.0f seconds ago)", age)
+            logger.warning(
+                "/v1/metrics: Returning stale metrics (last scrape was %.0f seconds ago)", age)
     return PlantMetrics(**metrics_dict)
 
 
