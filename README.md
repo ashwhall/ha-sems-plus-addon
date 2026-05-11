@@ -1,3 +1,5 @@
+**Deprecated in favour of https://github.com/timsoethout/goodwe-sems-home-assistant now that it's SEMS+ compatible**
+
 # SEMS+ Scraper — Home Assistant Add-on
 
 > **Disclaimer:**
